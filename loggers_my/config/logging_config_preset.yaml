@@ -1,0 +1,130 @@
+# Default Configuration
+version: 1
+
+# Disable previously created loggers_my and update the root logger at the instant
+#  the configuration file is fed.
+disable_existing_loggers: False
+
+# Refer filter block for detailed explanation
+filters:
+    # These are callable modules, where we define class for a filter, upon
+    #  execution an object for the class will be created by log manager
+    # Format:
+    # filter_name:
+    #       () : filter class path
+    info_filter:
+        () : loggers_my.config.filter.InfoFilter
+    warning_filter:
+        (): loggers_my.config.filter.WarningFilter
+    debug_filter:
+        (): loggers_my.config.filter.DebugFilter
+
+# Logging formatter definition
+# For more details on format types, 
+# source: 'https://docs.python.org/3/library/logging.html#logrecord-attributes
+formatters:
+    # Format:
+    # formatter_name:
+    #         format: "fmt_specified using pre-defined variables"
+    standard:
+        format: "%(asctime)s | %(levelname)s | %(module)s(%(lineno)d) | %(levelname)s | %(name)s(%(lineno)d) || %(message)s"
+
+    status_stage:
+        format: "%(asctime)s | %(levelname)s | %(module)s(%(lineno)d) || %(message)s"
+    error_stream:
+        format: "%(asctime)s | %(levelname)s | %(module)s(%(lineno)d) | %(name)s.%(funcName)s() || %(message)s"
+    simple:
+        format: "%(asctime)s | %(levelname)s | %(module)s(%(lineno)d) || %(message)s"
+    warning_functionality:
+        format: "%(asctime)s | %(levelname)s | %(module)s(%(lineno)d) || %(message)s"
+    debug_file_stream:
+        format: "%(asctime)s | %(levelname)s | %(module)s(%(lineno)d) || %(message)s"
+
+
+# Logging handlers
+# Console and Error Console belongs to StreamHandler whereas info_file_handler belongs to Rotating File Handler
+# Information about a list of pre-defined handlers: 'https://docs.python.org/3/library/logging.handlers.html#module-logging.handlers'
+handlers:
+    # Format:
+    # handler_name:
+    #       handler_attributes: attribute values
+
+    info_console:
+        class: logging.StreamHandler
+        level: INFO
+        formatter: status_stage
+        filters: [info_filter]
+        stream: ext://sys.stdout
+
+    error_console:
+        class: logging.StreamHandler
+        level: ERROR
+        formatter: error_stream
+        stream: ext://sys.stderr
+
+    console:
+        class: logging.StreamHandler
+        level: INFO
+        formatter: standard
+#        filters: [info_filter]
+        stream: ext://sys.stdout
+
+    warning_file_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: WARNING
+        formatter: warning_functionality
+        filename: loggers_my/logs/errors.log
+        filters: [warning_filter]
+        maxBytes: 10485760 # 10MB
+        backupCount: 20
+        encoding: utf8
+
+    error_file_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: ERROR
+        formatter: error_stream
+        filename: loggers_my/logs/errors.log
+        maxBytes: 10485760 # 10MB
+        backupCount: 20
+        encoding: utf8
+
+    debug_file_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: DEBUG
+        formatter: debug_file_stream
+        filename: loggers_my/logs/debug.log
+        filters: [ debug_filter ]
+        maxBytes: 10485760 # 10MB
+        backupCount: 20
+        encoding: utf8
+
+
+# Root Logger Configuration
+root:
+    # Logger Level - Set to NOTSET if you have child loggers_my with pre-defined levels
+    level: NOTSET
+    # Attach handlers for Root Logger
+    handlers: [console]
+    # Stop propagation from child to parent in Logging hierarchy
+    propagate: no
+
+
+# Module level configuration
+loggers:
+    # logger name: parser_app.management.commands.ukrnet
+    parser_app.management.commands.ukrnet:
+        level: DEBUG
+        handlers: [info_console, error_console, warning_file_handler, error_file_handler, debug_file_handler]
+        propagate: no
+
+    # currently not using
+    parser_app.logger_common:
+        level: DEBUG
+        handlers: [ info_console, error_console, warning_file_handler, error_file_handler, debug_file_handler ]
+        propagate: no
+
+    # currently not using
+    custom_logger:
+        level: INFO
+        handlers: [info_console]
+        propagate: no
